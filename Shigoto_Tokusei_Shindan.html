@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>仕事の特性・強み診断</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Hiragino Sans','Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;background:#f7f8fa;color:#1a1a2e;min-height:100vh}
+.container{max-width:100%;margin:0 auto;padding:1.25rem 1rem 4rem}
+.page-header{background:#1a1a2e;color:#fff;padding:1.5rem 1.25rem;border-radius:12px;margin-bottom:1.5rem;position:relative;overflow:hidden}
+.page-header::before{content:'';position:absolute;top:-40px;right:-40px;width:150px;height:150px;border-radius:50%;background:rgba(99,102,241,0.2)}
+.page-header h1{font-size:clamp(18px,5vw,22px);font-weight:600;margin-bottom:6px;position:relative}
+.page-header p{font-size:clamp(11px,3vw,13px);color:rgba(255,255,255,0.7);line-height:1.6;position:relative}
+.badge{display:inline-block;background:rgba(99,102,241,0.3);border:1px solid rgba(99,102,241,0.5);color:#a5b4fc;font-size:11px;padding:3px 10px;border-radius:20px;margin-bottom:8px}
+.progress-wrap{background:#fff;border-radius:10px;padding:0.875rem 1rem;margin-bottom:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.progress-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.progress-info span{font-size:12px;color:#6b7280}
+.progress-info strong{font-size:13px;color:#1a1a2e}
+.prog-bar{height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6);border-radius:3px;transition:width .3s}
+.name-card{background:#fff;border-radius:10px;padding:0.875rem 1rem;margin-bottom:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.name-card label{font-size:12px;font-weight:600;color:#6b7280;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+.name-card input{width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:16px;color:#1a1a2e;background:#fafafa;transition:border-color .15s;font-family:inherit;-webkit-appearance:none}
+.name-card input:focus{outline:none;border-color:#6366f1;background:#fff}
+.qrow{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:.5px solid #f3f4f6}
+.qrow:last-child{border-bottom:none}
+.qleft .qn{font-size:11px;color:#9ca3af;margin-bottom:3px}
+.qleft .qt{font-size:clamp(12px,3.5vw,13px);color:#1a1a2e;line-height:1.55}
+.scale{display:flex;gap:clamp(4px,1.5vw,8px)}
+.scale label{cursor:pointer}
+.scale input{display:none}
+.scale span{display:flex;align-items:center;justify-content:center;width:clamp(32px,9vw,38px);height:clamp(32px,9vw,38px);border-radius:50%;border:1.5px solid #e5e7eb;font-size:clamp(12px,3.5vw,14px);color:#9ca3af;transition:all .15s;font-weight:500;-webkit-tap-highlight-color:transparent}
+.scale input:checked+span{background:#6366f1;border-color:#6366f1;color:#fff}
+.scale label:hover span{border-color:#6366f1;color:#6366f1}
+.btn-wrap{margin-top:1.5rem;display:flex;flex-direction:column;gap:10px}
+.btn-primary{background:#6366f1;color:#fff;border:none;border-radius:10px;padding:14px 24px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s;width:100%;-webkit-appearance:none}
+.btn-primary:hover{background:#4f46e5}
+.btn-primary:disabled{background:#d1d5db;color:#9ca3af;cursor:not-allowed}
+.btn-outline{background:#fff;color:#6b7280;border:1.5px solid #e5e7eb;border-radius:10px;padding:13px 24px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s;width:100%;-webkit-appearance:none}
+.btn-outline:hover{border-color:#6366f1;color:#6366f1}
+.btn-pdf{background:#6366f1;color:#fff;border:none;border-radius:10px;padding:13px 24px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;width:100%;-webkit-appearance:none}
+.btn-pdf:hover{background:#4f46e5}
+
+/* 結果画面 */
+.result-header{background:#1a1a2e;color:#fff;border-radius:12px;padding:1.25rem;margin-bottom:1.25rem}
+.result-header h2{font-size:clamp(16px,4vw,20px);font-weight:600;margin-bottom:4px}
+.result-header p{font-size:12px;color:rgba(255,255,255,0.6)}
+.score-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:1.25rem}
+.score-card{background:#fff;border-radius:10px;padding:8px 4px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.score-card .sl{font-size:9px;color:#9ca3af;margin-bottom:3px;line-height:1.3}
+.score-card .sv{font-size:clamp(16px,4vw,20px);font-weight:700}
+.score-card .sb{height:3px;border-radius:2px;margin-top:4px;background:#f3f4f6}
+.score-card .sbf{height:100%;border-radius:2px}
+.score-card .stag{font-size:9px;margin-top:3px;padding:1px 4px;border-radius:3px;display:inline-block}
+.chart-wrap{background:#fff;border-radius:12px;padding:1rem;margin-bottom:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.chart-wrap h3{font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.07em;margin-bottom:0.75rem}
+.chart-inner{position:relative;height:280px}
+#radarSvg{width:100%;height:280px;display:block}
+#chartPrintImg{display:none}
+.type-card{background:#fff;border-left:4px solid #6366f1;border-radius:0 10px 10px 0;padding:1rem;margin-bottom:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.type-card h3{font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:5px}
+.type-card p{font-size:13px;color:#6b7280;line-height:1.7}
+.sec-title{font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid #f3f4f6}
+.cat-item{display:flex;gap:8px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #f3f4f6}
+.cat-item:last-child{border-bottom:none}
+.cat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.cat-body{flex:1;min-width:0}
+.cat-name{font-size:13px;font-weight:600;color:#1a1a2e;margin-bottom:2px;display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.cat-desc{font-size:12px;color:#6b7280;line-height:1.5}
+.cat-val{font-size:16px;font-weight:700;flex-shrink:0}
+.section-block{background:#fff;border-radius:12px;padding:1rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+
+/* 有料版誘導 */
+.premium-box{background:#1a1a2e;border-radius:12px;padding:1.25rem;margin-bottom:1.25rem;color:#fff}
+.premium-box h3{font-size:14px;font-weight:600;margin-bottom:8px;color:#a5b4fc}
+.premium-box p{font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7;margin-bottom:10px}
+.premium-list{list-style:none;padding:0;margin-bottom:8px}
+.premium-list li{font-size:12px;color:rgba(255,255,255,0.8);padding:3px 0;display:flex;gap:8px;align-items:center}
+.premium-list li:before{content:'✦';color:#a5b4fc;font-size:10px;flex-shrink:0}
+
+/* Googleフォーム送信 */
+.send-box{background:#f0fdf4;border:1.5px solid #86efac;border-radius:12px;padding:1rem;margin-bottom:1.25rem}
+.send-box h3{font-size:13px;font-weight:700;color:#166534;margin-bottom:6px}
+.send-box p{font-size:12px;color:#166534;line-height:1.7;margin-bottom:12px}
+.form-link{display:block;background:#fff;border:1.5px solid #86efac;border-radius:8px;padding:14px 16px;font-size:14px;color:#6366f1;text-decoration:none;text-align:center;font-weight:600;margin-bottom:12px}
+.steps{list-style:none;padding:0}
+.steps li{font-size:12px;color:#166534;padding:4px 0;display:flex;gap:8px;align-items:flex-start}
+.step-num{background:#22c55e;color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px}
+.hidden{display:none}
+
+/* ========== 印刷スタイル ========== */
+@media print{
+  @page{ size:A4; margin:12mm 10mm; }
+  *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  body{ background:#fff !important; margin:0 !important; padding:0 !important; }
+  /* 回答フォームと不要要素を非表示 */
+  #formView{ display:none !important; }
+  .no-print{ display:none !important; }
+  .print-logo{ display:none !important; }
+  .print-title{ display:none !important; }
+  /* 結果エリアを全幅表示 */
+  .container{ padding:0 !important; max-width:100% !important; margin:0 !important; }
+  #resultView{ display:block !important; }
+  #printArea{ display:block !important; }
+  /* 各カード */
+  .result-header{
+    background:#1a1a2e !important;
+    color:#fff !important;
+    border-radius:6px !important;
+    padding:10px 12px !important;
+    margin-bottom:8px !important;
+    break-after:avoid;
+  }
+  .result-header h2{ color:#fff !important; font-size:16px !important; }
+  .result-header p{ color:rgba(255,255,255,0.7) !important; }
+  .score-grid{
+    display:grid !important;
+    grid-template-columns:repeat(5,1fr) !important;
+    gap:4px !important;
+    margin-bottom:8px !important;
+    break-inside:avoid;
+  }
+  .score-card{ border:1px solid #e5e7eb !important; box-shadow:none !important; padding:6px 4px !important; }
+  .chart-wrap{
+    border:1px solid #e5e7eb !important;
+    box-shadow:none !important;
+    padding:8px !important;
+    margin-bottom:8px !important;
+    break-inside:avoid;
+  }
+  .chart-inner{ height:240px !important; }
+  #radarSvg{ width:240px !important; height:240px !important; display:block !important; margin:0 auto !important; }
+  .chart-inner canvas{ display:none !important; }
+  .type-card{
+    border:.5px solid #e5e7eb !important;
+    box-shadow:none !important;
+    margin-bottom:8px !important;
+    break-inside:avoid;
+  }
+  .section-block{
+    border:.5px solid #e5e7eb !important;
+    box-shadow:none !important;
+    break-inside:avoid;
+  }
+  .cat-item{ break-inside:avoid; padding:6px 0 !important; }
+  .cat-desc{ font-size:11px !important; }
+}
+
+/* 印刷用要素（画面では非表示） */
+.print-logo{display:none}
+.print-title{display:none}
+
+@media(min-width:480px){
+  .btn-wrap{flex-direction:row}
+  .btn-primary,.btn-outline,.btn-pdf{width:auto;flex:1}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div id="formView">
+  <div class="page-header">
+    <div class="badge">事務職向け　全30問</div>
+    <h1>仕事の特性・強み診断</h1>
+    <p>自分の働き方パターンを知る30問<br>5段階評価（1＝まったくあてはまらない ／ 5＝非常にあてはまる）</p>
+  </div>
+  <div class="name-card">
+    <label>お名前</label>
+    <input type="text" id="nameInput" placeholder="例：山田 太郎" maxlength="20" autocomplete="name">
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-info"><span>回答進捗</span><strong><span id="answeredCount">0</span> / 30 問</strong></div>
+    <div class="prog-bar"><div class="prog-fill" id="pf" style="width:0%"></div></div>
+  </div>
+  <div id="qa"></div>
+  <div class="btn-wrap">
+    <button class="btn-outline" onclick="reshuffle()">↺ 設問を並び替え</button>
+    <button class="btn-primary" id="sb" disabled onclick="showResult()">診断結果を見る →</button>
+  </div>
+</div>
+
+<div id="resultView" class="hidden">
+  <!-- 印刷対象エリア -->
+  <div id="printArea">
+
+    <!-- 印刷時のみ表示：ロゴ＋コピーライト -->
+    <div class="print-logo">
+      <span>©2026 ウーマンテイクオフ</span>
+    </div>
+
+    <!-- 印刷時のみ表示：大タイトル -->
+    <div class="print-title">仕事の特性・強み診断</div>
+
+    <div class="result-header">
+      <h2 id="resName"></h2>
+      <p id="resDate"></p>
+    </div>
+    <div class="score-grid" id="resScores"></div>
+    <div class="chart-wrap">
+      <h3>特性レーダーチャート</h3>
+      <div class="chart-inner">
+        <canvas id="rc" style="display:none"></canvas>
+        <svg id="radarSvg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+    </div>
+    <div class="type-card" id="typeCard"></div>
+    <div class="section-block">
+      <div class="sec-title">各特性の分析</div>
+      <div id="catDetail"></div>
+    </div>
+  </div>
+
+  <!-- 有料版誘導（印刷対象外） -->
+  <div class="premium-box no-print">
+    <h3>📋 詳細診断レポート（有料版）では…</h3>
+    <p>より深い分析で、あなたの強みを最大限に活かすヒントをお届けします。</p>
+    <ul class="premium-list">
+      <li>強みの掛け算分析（複数軸の組み合わせによる深掘り）</li>
+      <li>優先対応策（今週・1ヶ月・3ヶ月のアクションプラン）</li>
+      <li>事務局からの総括メッセージ</li>
+    </ul>
+    <p style="font-size:11px;color:rgba(255,255,255,0.5)">※ 詳細レポートご希望の方は事務局までお問い合わせください。</p>
+  </div>
+
+  <!-- Googleフォーム送信 -->
+  <div class="send-box no-print">
+    <h3>📊 組織集計への参加</h3>
+    <p>下のリンクをタップするとGoogleフォームがスコア自動入力済みの状態で開きます。</p>
+    <a id="formLink" class="form-link" href="#" target="_blank">Googleフォームを開いて送信する →</a>
+    <ul class="steps">
+      <li><span class="step-num">1</span>上のリンクをタップしてGoogleフォームを開く</li>
+      <li><span class="step-num">2</span>スコアが自動入力されていることを確認する</li>
+      <li><span class="step-num">3</span>フォーム下部の青い「送信」ボタンを押して完了</li>
+    </ul>
+  </div>
+
+  <div class="btn-wrap no-print">
+    <button class="btn-pdf" onclick="togglePrintGuide()">📄 PDFで保存する方法</button>
+    <button class="btn-outline" onclick="resetAll()">↺ もう一度診断する</button>
+  </div>
+  <div id="printGuide" class="no-print" style="display:none;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:1rem;margin-top:10px">
+    <p style="font-size:13px;font-weight:700;color:#1e40af;margin-bottom:10px">📄 PDFで保存する手順</p>
+    <div id="guideContent"></div>
+    <p style="font-size:11px;color:#3b82f6;margin-top:10px">※ レーダーチャートも含めて保存されます</p>
+  </div>
+</div>
+
+</div>
+<script>
+const FORM_BASE='https://docs.google.com/forms/d/e/1FAIpQLSdosKU0GF8DOZ4zSmjr6vlRVU5h9vtLw6Hm1wIMYHviM1SYPQ/viewform';
+const ENTRY={name:'entry.317123376',acc:'entry.139772551',dep:'entry.779242982',con:'entry.1868697523',sel:'entry.596045453',pas:'entry.1879763927'};
+const CATS=[
+  {key:'Accuracy',label:'品質へのこだわり',short:'品質',color:'#6366f1'},
+  {key:'Dependency',label:'協調・連携力',short:'協調',color:'#8b5cf6'},
+  {key:'Conservativeness',label:'安定・継続力',short:'安定',color:'#f59e0b'},
+  {key:'SelfReliance',label:'自律・実行力',short:'自律',color:'#10b981'},
+  {key:'Passive',label:'観察・適応力',short:'観察',color:'#ef4444'}
+];
+const ALL_QS=[
+  {id:1,t:'仕事の正確さを最優先し、スピードより精度を重視する。',c:'Accuracy'},
+  {id:2,t:'ミスを防ぐために、何度も確認する癖がある。',c:'Accuracy'},
+  {id:3,t:'他人の仕事の細部が気になることが多い。',c:'Accuracy'},
+  {id:4,t:'完成度が低いまま提出することに強い抵抗を感じる。',c:'Accuracy'},
+  {id:5,t:'自分の仕事に「完璧」を求めすぎて時間がかかる。',c:'Accuracy'},
+  {id:6,t:'他人に任せるより、自分でやったほうが安心だと思う。',c:'Accuracy'},
+  {id:7,t:'判断に迷ったとき、上司や同僚の意見を聞いてから動く。',c:'Dependency'},
+  {id:8,t:'自分の判断で進めるより、指示を待つほうが安心する。',c:'Dependency'},
+  {id:9,t:'仕事の優先順位を自分で決めるのが苦手だ。',c:'Dependency'},
+  {id:10,t:'決定権を持つことにプレッシャーを感じる。',c:'Dependency'},
+  {id:11,t:'他者の承認がないと不安になることがある。',c:'Dependency'},
+  {id:12,t:'自分の意見より、周囲の意見を優先しがちだ。',c:'Dependency'},
+  {id:13,t:'新しい方法より、慣れたやり方を選ぶことが多い。',c:'Conservativeness'},
+  {id:14,t:'変化より安定を重視する傾向がある。',c:'Conservativeness'},
+  {id:15,t:'新しいツールや仕組みの導入に慎重になる。',c:'Conservativeness'},
+  {id:16,t:'「以前うまくいった方法」を繰り返すことが多い。',c:'Conservativeness'},
+  {id:17,t:'変化が多い環境ではストレスを感じやすい。',c:'Conservativeness'},
+  {id:18,t:'既存のルールを変えることに抵抗を感じる。',c:'Conservativeness'},
+  {id:19,t:'他人に頼るより、自分で解決しようとする。',c:'SelfReliance'},
+  {id:20,t:'仕事を任せるより、自分で抱えたほうが早いと思う。',c:'SelfReliance'},
+  {id:21,t:'責任感が強く、他人のミスも自分で補おうとする。',c:'SelfReliance'},
+  {id:22,t:'業務を共有するより、自分のやり方を守りたい。',c:'SelfReliance'},
+  {id:23,t:'忙しくても「自分がやらなければ」と思ってしまう。',c:'SelfReliance'},
+  {id:24,t:'他人に頼むことに罪悪感を感じることがある。',c:'SelfReliance'},
+  {id:25,t:'会議で意見を求められても、発言を控えることが多い。',c:'Passive'},
+  {id:26,t:'改善提案をしたいと思っても、行動に移せないことがある。',c:'Passive'},
+  {id:27,t:'周囲の反応を気にして発言を控える傾向がある。',c:'Passive'},
+  {id:28,t:'新しいアイデアを出すより、指示された仕事をこなすほうが得意だ。',c:'Passive'},
+  {id:29,t:'自分の考えを伝えるより、相手に合わせることが多い。',c:'Passive'},
+  {id:30,t:'チーム内で目立つことを避けたいと思う。',c:'Passive'}
+];
+// スコア別5段階コメント（各設問6問の平均値を四捨五入して1〜5に対応）
+const DETAIL={
+  Accuracy:{
+    1:{str:'品質よりもスピードや大局観を重視するスタイルです。細部にとらわれず大きな流れを素早くつかむ行動力があります。',risk:'確認不足によるミスが発生しやすい場面があります。提出前に「ひと呼吸おいて見直す」習慣を取り入れると信頼性がぐっと高まります。'},
+    2:{str:'完璧さよりも実行力を優先できる柔軟さがあります。「まず動いてみる」姿勢が業務のスピードを生み出しています。',risk:'仕上げの甘さが気になる場面が出てくることがあります。重要な成果物に絞って確認の精度を上げる意識が効果的です。'},
+    3:{str:'品質とスピードのバランスを取りながら業務を進められています。状況に応じて確認の深さを調整できる実用的なスタイルです。',risk:'判断基準が場面によってぶれることがあります。業務の重要度に応じた確認レベルの基準を自分なりに持っておくと安定します。'},
+    4:{str:'細部への注意力が高く、完成度の高い成果物を出せます。丁寧さと品質へのこだわりが周囲からの信頼につながっています。',risk:'完璧を意識するあまり時間がかかりすぎる場面があります。「この業務は80点で十分」と判断できる感覚を育てましょう。'},
+    5:{str:'品質への強いこだわりと徹底した確認習慣が、ミスゼロに近い仕事を実現しています。信頼性の高さはチームの安心感にもつながっています。',risk:'スピードや他者への委任が後回しになりやすい傾向があります。優先度の低い業務では「合格点で手放す」判断を意識的に練習しましょう。'}
+  },
+  Dependency:{
+    1:{str:'自律的に判断し、迷わず行動できる決断力があります。スピーディな実行力は変化の多い場面で大きな武器になります。',risk:'チームへの情報共有や合意形成が後回しになりやすい面があります。重要な決定の前に一声かける習慣が、周囲との信頼関係を深めます。'},
+    2:{str:'自分の判断を信じて動ける主体性があります。指示を待たずに業務を前に進める力が、職場での頼もしさにつながっています。',risk:'周囲の意見を取り入れるタイミングがやや遅くなることがあります。「確認を1回入れると後が楽になる場面」を意識して見極めましょう。'},
+    3:{str:'自律性と協調性のバランスが取れており、状況に応じて相談と自己判断を使い分けられています。安定感のある働き方です。',risk:'どちらに寄るべきか迷う場面で判断が遅れることがあります。「この種類の判断は自分で決める」という自分ルールを持つと動きやすくなります。'},
+    4:{str:'周囲との連携を大切にしながら業務を進める協調力があります。チームの合意を丁寧に形成できる姿勢が職場の安定に貢献しています。',risk:'承認を待つことで業務が止まる場面があります。「この範囲は自分で判断してよい」という基準を上司と握っておくと動きやすくなります。'},
+    5:{str:'チームとの連携と合意形成を何より大切にするスタイルです。周囲への気配りと協調性の高さが、職場の雰囲気づくりにも大きく貢献しています。',risk:'自己判断が必要な場面でためらいが生じやすく、承認待ちによる業務の遅れが起きることがあります。小さな決断から「自分で決める練習」を積み重ねましょう。'}
+  },
+  Conservativeness:{
+    1:{str:'新しい環境や方法への適応力が非常に高く、変化をチャンスとして積極的に捉えられます。革新的なアイデアを実行に移す推進力が強みです。',risk:'変化を好むあまり、既存の仕組みや周囲のペースとの摩擦が生じる場面があります。チームの足並みを確認しながら進める意識も大切にしましょう。'},
+    2:{str:'柔軟な発想と変化への前向きな姿勢が、業務改善や新しい取り組みへの貢献力につながっています。行動力も伴っているのが強みです。',risk:'継続性や安定性の視点が後回しになることがあります。「この変化は定着するか」という長期視点を少し意識すると提案の説得力が増します。'},
+    3:{str:'安定を大切にしながらも、必要な変化は受け入れられる柔軟性があります。継続性と適応力のバランスが取れた実務的なスタイルです。',risk:'変化の規模によって対応にばらつきが出ることがあります。「どの程度の変化なら受け入れられるか」の自分基準を整理しておくと判断が早くなります。'},
+    4:{str:'実績ある方法を大切にし、安定した品質を継続して出せる堅実さがあります。リスクを丁寧に見極める慎重さが周囲からの信頼につながっています。',risk:'新しい取り組みへの参加に時間がかかる場面があります。「まず小さく試す」という姿勢を持つことで、変化への第一歩が踏み出しやすくなります。'},
+    5:{str:'安定・継続・確実性を最も重視するスタイルです。「以前うまくいった方法」を丁寧に守り続ける姿勢が、ミスの少ない安心感のある仕事を生んでいます。',risk:'変化や改善提案に対して慎重になりすぎる場面があります。「失敗してもリカバリーできる小さな実験」から始める発想を取り入れてみましょう。'}
+  },
+  SelfReliance:{
+    1:{str:'他者と協力しながら業務を進めることが得意で、チームの力を最大限に活かす調整力・連携力があります。一人で抱え込まない柔軟さも強みです。',risk:'自分の役割や担当範囲が曖昧になりやすい面があります。「この業務は自分が主体」という意識を持つことで、より力を発揮しやすくなります。'},
+    2:{str:'チームへの依存と自律のバランスをうまく取りながら仕事を進められています。協力を得ながらも自分の判断で動ける場面も増えてきています。',risk:'重要な局面で「誰かがやってくれる」という意識が出ることがあります。自分が主体となるべき業務を明確にしておくと、責任感がさらに高まります。'},
+    3:{str:'自分でこなす場面と周囲に頼る場面を状況に応じて使い分けられています。責任感を持ちながらも無理をせず進められる安定したスタイルです。',risk:'状況によって一人で抱えすぎてしまうことがあります。「早めに相談する」判断基準を持つと、より安定したパフォーマンスが維持できます。'},
+    4:{str:'強い責任感と実行力で、任された業務を確実にやり遂げる力があります。自ら考えて動く姿勢が、周囲からの信頼と期待につながっています。',risk:'業務を抱え込みすぎて負荷が高まる場面があります。「任せることも成果を出す手段」と意識的に捉えることで、より持続可能な働き方になります。'},
+    5:{str:'自律性と責任感が非常に高く、誰に言われなくても自ら考え動き、最後まで責任を持ってやり遂げる力があります。周囲が最も頼りにするタイプです。',risk:'抱え込みすぎによる過負荷や業務の属人化が起きやすい状態です。「任せる技術」を意識的に磨くことが、チーム全体の力を引き出すことにつながります。'}
+  },
+  Passive:{
+    1:{str:'意見や提案を積極的に発信できる力があり、場をリードする存在感があります。自分の考えを明確に伝えることで周囲に方向性を示せるタイプです。',risk:'発言が先行して周囲の状況把握が後回しになる場面があります。相手の反応や場の空気を読む「間」を意識すると、さらに影響力が高まります。'},
+    2:{str:'発言力と観察力を場面に応じて使い分けられています。自分の意見を伝えながら周囲の状況も把握できる、バランスの取れたコミュニケーターです。',risk:'発言のタイミングや内容に迷う場面が出てくることがあります。「自分の経験からの情報提供」として発言する意識を持つと自然に発信できます。'},
+    3:{str:'必要な場面では発言しながら、観察や傾聴も大切にできるバランス型です。状況に応じた柔軟なコミュニケーションスタイルを持っています。',risk:'発言すべき場面と控える場面の判断にやや迷いが生じることがあります。「自分の意見は情報のひとつ」と捉えると、発言へのハードルが下がります。'},
+    4:{str:'周囲をよく観察し状況を読む力が高く、傾聴と関係構築が得意です。場の空気を感じ取って適切なタイミングで動ける細やかさが強みです。',risk:'自身の貢献や能力が発言不足で正しく評価されにくい場面があります。「一言添えるだけでよい」という小さな発信から練習してみましょう。'},
+    5:{str:'観察力と傾聴力が非常に高く、周囲の状況を誰よりも正確に把握できます。相手に寄り添う姿勢と細やかな気配りが、深い信頼関係を生んでいます。',risk:'自分の意見や提案を表に出す機会が少なく、貢献が見えにくくなりがちです。会議や1on1で「一つだけ意見を言う」ルールを自分に課してみましょう。'}
+  }
+};
+function getDetail(key, score){
+  const rounded = Math.round(score);
+  const level = Math.min(5, Math.max(1, rounded));
+  return DETAIL[key][level];
+}
+const TYPE={Accuracy:{hi:'品質重視タイプ',lo:'スピード重視タイプ'},Dependency:{hi:'チーム協調タイプ',lo:'自律決断タイプ'},Conservativeness:{hi:'安定継続タイプ',lo:'変化適応タイプ'},SelfReliance:{hi:'自律完遂タイプ',lo:'協働活用タイプ'},Passive:{hi:'観察支援タイプ',lo:'積極発信タイプ'}};
+const TYPE_DESC={Accuracy:{hi:'品質と正確さへの高いこだわりを持ち、ミスの少ない信頼性の高い仕事が強みです。',lo:'スピード感をもって業務を進める行動力が強みです。'},Dependency:{hi:'周囲との合意と連携を大切にし、チームワークを活かしながら着実に進めるスタイルが強みです。',lo:'自分の判断を信じて行動できる自律性が強みです。'},Conservativeness:{hi:'実績のある方法を大切にし、安定した成果を継続して出せることが強みです。',lo:'新しい環境や方法への適応力が高く、変化をチャンスとして捉えられることが強みです。'},SelfReliance:{hi:'強い責任感と高い実行力で、任された仕事を最後までやり遂げる力が強みです。',lo:'他者と協力しながら柔軟に業務を進められることが強みです。'},Passive:{hi:'周囲をよく観察し、状況に応じた対応ができることが強みです。',lo:'意見や提案を積極的に発信できることが強みです。'}};
+
+const ans={};let shuffledQs=[];
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function getLvl(v){if(v>=4.3)return{l:'非常に高い',bg:'#fef2f2',tc:'#991b1b'};if(v>=3.5)return{l:'やや高い',bg:'#fff7ed',tc:'#92400e'};if(v>=2.5)return{l:'中程度',bg:'#f0fdf4',tc:'#166534'};return{l:'低い',bg:'#eff6ff',tc:'#1e40af'};}
+function buildQ(qs){
+  const area=document.getElementById('qa');area.innerHTML='';
+  qs.forEach((q,idx)=>{
+    const d=document.createElement('div');d.className='qrow';
+    let sc='<div class="scale">';
+    for(let v=1;v<=5;v++){const checked=ans[q.id]===v?'checked':'';sc+=`<label><input type="radio" name="q${q.id}" value="${v}" ${checked} onchange="onAns(${q.id})"><span>${v}</span></label>`;}
+    sc+='</div>';
+    d.innerHTML=`<div class="qleft"><div class="qn">Q${idx+1}</div><div class="qt">${q.t}</div></div>${sc}`;
+    area.appendChild(d);
+  });
+}
+function onAns(qid){
+  document.querySelectorAll(`input[name="q${qid}"]`).forEach(r=>{if(r.checked)ans[qid]=+r.value});
+  const n=Object.keys(ans).length;
+  document.getElementById('pf').style.width=(n/30*100)+'%';
+  document.getElementById('answeredCount').textContent=n;
+  document.getElementById('sb').disabled=n<30||!document.getElementById('nameInput').value.trim();
+}
+document.getElementById('nameInput').addEventListener('input',()=>{
+  document.getElementById('sb').disabled=Object.keys(ans).length<30||!document.getElementById('nameInput').value.trim();
+});
+function reshuffle(){shuffledQs=shuffle(ALL_QS);buildQ(shuffledQs);}
+function calcScores(){
+  const s={};
+  CATS.forEach(cat=>{const qs=ALL_QS.filter(q=>q.c===cat.key);s[cat.key]=Math.round(qs.reduce((a,q)=>a+(ans[q.id]||0),0)/qs.length*10)/10;});
+  return s;
+}
+
+// SVGレーダーチャートを描画する
+function drawRadarSVG(scores){
+  const svg=document.getElementById('radarSvg');
+  const cx=150,cy=150,r=110,n=5;
+  const cats=CATS;
+  const labels=cats.map(c=>c.short);
+  const colors=cats.map(c=>c.color);
+  const vals=cats.map(c=>scores[c.key]);
+  const angles=cats.map((_,i)=>((Math.PI*2*i)/n)-(Math.PI/2));
+
+  let html='';
+  // グリッド円（1〜5）
+  for(let lv=1;lv<=5;lv++){
+    const rr=r*(lv/5);
+    const pts=angles.map(a=>`${cx+rr*Math.cos(a)},${cy+rr*Math.sin(a)}`).join(' ');
+    html+=`<polygon points="${pts}" fill="none" stroke="#e5e7eb" stroke-width="${lv===5?1.5:0.8}"/>`;
+  }
+  // 軸線
+  angles.forEach(a=>{
+    html+=`<line x1="${cx}" y1="${cy}" x2="${cx+r*Math.cos(a)}" y2="${cy+r*Math.sin(a)}" stroke="#e5e7eb" stroke-width="0.8"/>`;
+  });
+  // データポリゴン
+  const dpts=angles.map((a,i)=>{const rv=r*(Math.max(0,Math.min(5,vals[i]))/5);return `${cx+rv*Math.cos(a)},${cy+rv*Math.sin(a)}`;}).join(' ');
+  html+=`<polygon points="${dpts}" fill="rgba(99,102,241,0.15)" stroke="#6366f1" stroke-width="2"/>`;
+  // データポイント
+  angles.forEach((a,i)=>{
+    const rv=r*(Math.max(0,Math.min(5,vals[i]))/5);
+    html+=`<circle cx="${cx+rv*Math.cos(a)}" cy="${cy+rv*Math.sin(a)}" r="5" fill="${colors[i]}" stroke="#fff" stroke-width="2"/>`;
+  });
+  // ラベル
+  angles.forEach((a,i)=>{
+    const lr=r+22;
+    const lx=cx+lr*Math.cos(a);
+    const ly=cy+lr*Math.sin(a);
+    html+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="11" fill="#6b7280" font-family="sans-serif">${labels[i]}</text>`;
+  });
+  svg.innerHTML=html;
+}
+
+function showResult(){
+  const name=document.getElementById('nameInput').value.trim();
+  const sc=calcScores();
+  const sorted=CATS.map(c=>({...c,v:sc[c.key]})).sort((a,b)=>b.v-a.v);
+  const top=sorted[0];
+  document.getElementById('formView').classList.add('hidden');
+  document.getElementById('resultView').classList.remove('hidden');
+  window.scrollTo(0,0);
+  document.getElementById('resName').textContent=`${name} さんの診断結果`;
+  document.getElementById('resDate').textContent=`回答日：${new Date().toLocaleDateString('ja-JP')}`;
+  const sg=document.getElementById('resScores');sg.innerHTML='';
+  CATS.forEach(cat=>{const v=sc[cat.key];const lv=getLvl(v);const pct=Math.round(v/5*100);sg.innerHTML+=`<div class="score-card"><div class="sl">${cat.short}</div><div class="sv" style="color:${cat.color}">${v.toFixed(1)}</div><div class="sb"><div class="sbf" style="width:${pct}%;background:${cat.color}"></div></div><div class="stag" style="background:${lv.bg};color:${lv.tc}">${lv.l}</div></div>`;});
+  const isHi=top.v>=3.0;
+  const tc=document.getElementById('typeCard');tc.style.borderLeftColor=top.color;
+  tc.innerHTML=`<h3>🎯 ${TYPE[top.key][isHi?'hi':'lo']}</h3><p>${TYPE_DESC[top.key][isHi?'hi':'lo']}</p>`;
+  const cd=document.getElementById('catDetail');cd.innerHTML='';
+  sorted.forEach(cat=>{const d=getDetail(cat.key,cat.v);const lv=getLvl(cat.v);cd.innerHTML+=`<div class="cat-item"><div class="cat-dot" style="background:${cat.color}"></div><div class="cat-body"><div class="cat-name">${cat.label}<span style="font-size:10px;background:${lv.bg};color:${lv.tc};padding:1px 5px;border-radius:3px">${lv.l}</span></div><div class="cat-desc"><strong>強み：</strong>${d.str}</div><div class="cat-desc" style="margin-top:3px"><strong>成長ポイント：</strong>${d.risk}</div></div><div class="cat-val" style="color:${cat.color}">${cat.v.toFixed(1)}</div></div>`;});
+  const url=FORM_BASE+'?usp=pp_url'+'&'+ENTRY.name+'='+encodeURIComponent(name)+'&'+ENTRY.acc+'='+sc.Accuracy+'&'+ENTRY.dep+'='+sc.Dependency+'&'+ENTRY.con+'='+sc.Conservativeness+'&'+ENTRY.sel+'='+sc.SelfReliance+'&'+ENTRY.pas+'='+sc.Passive;
+  document.getElementById('formLink').href=url;
+  drawRadarSVG(sc);
+}
+
+function getDeviceGuide(){
+  const ua=navigator.userAgent;
+  const isIOS=/iPhone|iPad|iPod/i.test(ua);
+  const isAndroid=/Android/i.test(ua);
+  const isMac=/Macintosh|MacIntel/i.test(ua)&&!isIOS;
+  const isWindows=/Windows/i.test(ua);
+
+  if(isIOS){
+    return `<p style="font-size:12px;color:#1e3a8a;margin-bottom:6px;font-weight:600">📱 iPhone / iPad（Safari）</p>
+    <ol style="padding-left:18px;font-size:13px;color:#1e3a8a;line-height:2.2">
+      <li>画面下部（または上部）の <strong>共有ボタン（□↑）</strong> をタップ</li>
+      <li>メニューをスクロールして <strong>「PDFを作成」</strong> をタップ</li>
+      <li>右上の <strong>「完了」→「ファイルを保存」</strong> で保存完了</li>
+    </ol>`;
+  } else if(isAndroid){
+    return `<p style="font-size:12px;color:#1e3a8a;margin-bottom:6px;font-weight:600">📱 Android（Chrome）</p>
+    <ol style="padding-left:18px;font-size:13px;color:#1e3a8a;line-height:2.2">
+      <li>画面右上の <strong>「⋮（メニュー）」</strong> をタップ</li>
+      <li><strong>「印刷」</strong> をタップ</li>
+      <li>プリンターの選択欄で <strong>「PDFとして保存」</strong> を選ぶ</li>
+      <li><strong>「PDF（↓）」</strong> ボタンをタップして保存</li>
+    </ol>`;
+  } else if(isMac){
+    return `<p style="font-size:12px;color:#1e3a8a;margin-bottom:6px;font-weight:600">💻 Mac</p>
+    <ol style="padding-left:18px;font-size:13px;color:#1e3a8a;line-height:2.2">
+      <li>キーボードの <strong>Command（⌘）+ P</strong> を押す</li>
+      <li>印刷ダイアログ左下の <strong>「PDF」</strong> をクリック</li>
+      <li><strong>「PDFとして保存」</strong> を選んで保存先を指定</li>
+    </ol>`;
+  } else {
+    return `<p style="font-size:12px;color:#1e3a8a;margin-bottom:6px;font-weight:600">💻 Windows（Edge / Chrome）</p>
+    <ol style="padding-left:18px;font-size:13px;color:#1e3a8a;line-height:2.2">
+      <li>キーボードの <strong>Ctrl + P</strong> を押す</li>
+      <li>プリンターの選択欄で <strong>「Microsoft Print to PDF」</strong> を選ぶ</li>
+      <li><strong>「印刷」</strong> ボタンを押す</li>
+      <li>保存先とファイル名を指定して <strong>「保存」</strong></li>
+    </ol>`;
+  }
+}
+
+function togglePrintGuide(){
+  const g=document.getElementById('printGuide');
+  if(g.style.display==='none'){
+    document.getElementById('guideContent').innerHTML=getDeviceGuide();
+    g.style.display='block';
+  } else {
+    g.style.display='none';
+  }
+}
+
+function resetAll(){
+  Object.keys(ans).forEach(k=>delete ans[k]);
+  document.getElementById('nameInput').value='';
+  document.getElementById('pf').style.width='0%';
+  document.getElementById('answeredCount').textContent='0';
+  document.getElementById('sb').disabled=true;
+  document.getElementById('resultView').classList.add('hidden');
+  document.getElementById('formView').classList.remove('hidden');
+  document.getElementById('radarSvg').innerHTML='';
+  window.scrollTo(0,0);
+  shuffledQs=shuffle(ALL_QS);buildQ(shuffledQs);
+}
+shuffledQs=shuffle(ALL_QS);buildQ(shuffledQs);
+</script>
+</body>
+</html>
