@@ -294,7 +294,8 @@ function showResult(){
   const name=document.getElementById('nameInput').value.trim();
   const sc=calcScores();
   const sorted=CATS.map(function(c){return Object.assign({},c,{v:sc[c.key]});}).sort(function(a,b){return b.v-a.v;});
-  const top=sorted[0];
+  const topScore=sorted[0].v;
+  const tops=sorted.filter(function(c){return c.v===topScore;});
   document.getElementById('formView').classList.add('hidden');
   document.getElementById('resultView').classList.remove('hidden');
   window.scrollTo(0,0);
@@ -302,9 +303,18 @@ function showResult(){
   document.getElementById('resDate').textContent='回答日：'+new Date().toLocaleDateString('ja-JP');
   const sg=document.getElementById('resScores');sg.innerHTML='';
   CATS.forEach(function(cat){const v=sc[cat.key];const lv=getLvl(v);const pct=Math.round(v/5*100);sg.innerHTML+='<div class="score-card"><div class="sl">'+cat.short+'</div><div class="sv" style="color:'+cat.color+'">'+v.toFixed(1)+'</div><div class="sb"><div class="sbf" style="width:'+pct+'%;background:'+cat.color+'"></div></div><div class="stag" style="background:'+lv.bg+';color:'+lv.tc+'">'+lv.l+'</div></div>';});
-  const isHi=top.v>=3.0;
-  const tc=document.getElementById('typeCard');tc.style.borderLeftColor=top.color;
-  tc.innerHTML='<h3>🎯 '+TYPE[top.key][isHi?'hi':'lo']+'</h3><p>'+TYPE_DESC[top.key][isHi?'hi':'lo']+'</p>';
+  const tc=document.getElementById('typeCard');
+  if(tops.length===1){
+    const top=tops[0];const isHi=top.v>=3.0;
+    tc.style.borderLeftColor=top.color;
+    tc.innerHTML='<h3>🎯 '+TYPE[top.key][isHi?'hi':'lo']+'</h3><p>'+TYPE_DESC[top.key][isHi?'hi':'lo']+'</p>';
+  } else {
+    const typeNames=tops.map(function(t){const isHi=t.v>=3.0;return TYPE[t.key][isHi?'hi':'lo'];}).join('×');
+    const typeDescs=tops.map(function(t){const isHi=t.v>=3.0;return TYPE_DESC[t.key][isHi?'hi':'lo'];});
+    const combined=typeDescs.join('また、').replace('。また、','。さらに、');
+    tc.style.borderLeftColor='#6366f1';
+    tc.innerHTML='<h3>🎯 '+typeNames+'</h3><p>'+combined+'</p>';
+  }
   const cd=document.getElementById('catDetail');cd.innerHTML='';
   sorted.forEach(function(cat){const d=getDetail(cat.key,cat.v);const lv=getLvl(cat.v);cd.innerHTML+='<div class="cat-item"><div class="cat-dot" style="background:'+cat.color+'"></div><div class="cat-body"><div class="cat-name">'+cat.label+'<span style="font-size:10px;background:'+lv.bg+';color:'+lv.tc+';padding:1px 5px;border-radius:3px">'+lv.l+'</span></div><div class="cat-desc"><strong>強み：</strong>'+d.str+'</div><div class="cat-desc" style="margin-top:3px"><strong>成長ポイント：</strong>'+d.risk+'</div></div><div class="cat-val" style="color:'+cat.color+'">'+cat.v.toFixed(1)+'</div></div>';});
   drawRadarSVG(sc);
