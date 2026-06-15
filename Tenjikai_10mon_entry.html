@@ -315,7 +315,8 @@ function sendToGoogleForms(name, company, email, sc, typeName){
   form.method='POST';
   form.action=FORM_URL;
   form.target='hidden_iframe';
-  [['entry.1601902316',name],['entry.1114549675',company],['entry.1349649146',email]].forEach(function(pair){
+  const scores='品質:'+sc.Accuracy.toFixed(1)+' 協調:'+sc.Dependency.toFixed(1)+' 安定:'+sc.Conservativeness.toFixed(1)+' 自律:'+sc.SelfReliance.toFixed(1)+' 観察:'+sc.Passive.toFixed(1);
+  [['entry.1601902316',name],['entry.1114549675',company],['entry.1349649146',email],['entry.103691168',typeName],['entry.236424198',scores]].forEach(function(pair){
     const input=document.createElement('input');
     input.type='hidden';
     input.name=pair[0];
