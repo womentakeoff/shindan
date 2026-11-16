@@ -97,6 +97,11 @@ body{font-family:'Hiragino Sans','Hiragino Kaku Gothic ProN','Noto Sans JP',sans
 .steps li{font-size:12px;color:#166534;padding:4px 0;display:flex;gap:8px;align-items:flex-start}
 .step-num{background:#22c55e;color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px}
 .hidden{display:none}
+.name-card .lbl-gap{margin-top:12px}
+.req{font-size:10px;background:#fee2e2;color:#991b1b;padding:1px 6px;border-radius:3px;margin-left:4px;font-weight:600}
+.done-card{background:#fff;border-radius:12px;padding:1.5rem 1.25rem;margin-bottom:1.25rem;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.done-card h2{font-size:clamp(17px,4.5vw,21px);font-weight:700;color:#1a1a2e;margin-bottom:8px}
+.done-card p{font-size:13px;color:#4b5563;line-height:1.8}
 
 /* ========== 印刷スタイル ========== */
 @media print{
@@ -182,7 +187,13 @@ body{font-family:'Hiragino Sans','Hiragino Kaku Gothic ProN','Noto Sans JP',sans
     </div>
   </div>
   <div class="name-card">
-    <label>お名前</label>
+    <label>会社名 <span class="req">必須</span></label>
+    <input type="text" id="companyInput" placeholder="例：株式会社〇〇" maxlength="50" autocomplete="organization">
+    <label class="lbl-gap">部署名</label>
+    <input type="text" id="deptInput" placeholder="例：総務部" maxlength="50">
+    <label class="lbl-gap">役職</label>
+    <input type="text" id="posInput" placeholder="例：課長（役職がない場合は空欄で可）" maxlength="30" autocomplete="organization-title">
+    <label class="lbl-gap">お名前 <span class="req">必須</span></label>
     <input type="text" id="nameInput" placeholder="例：山田 太郎" maxlength="20" autocomplete="name">
   </div>
   <div class="progress-wrap">
@@ -192,7 +203,24 @@ body{font-family:'Hiragino Sans','Hiragino Kaku Gothic ProN','Noto Sans JP',sans
   <div id="qa"></div>
   <div class="btn-wrap">
     <button class="btn-outline" onclick="reshuffle()">↺ 設問を並び替え</button>
-    <button class="btn-primary" id="sb" disabled onclick="showResult()">診断結果を見る →</button>
+    <button class="btn-primary" id="sb" disabled onclick="showResult()">回答を完了する →</button>
+  </div>
+</div>
+
+<div id="doneView" class="hidden">
+  <div class="done-card">
+    <h2>ご回答ありがとうございました</h2>
+    <p>最後に下の手順で回答を送信してください。<br>診断結果は事務局で集計のうえ、後日レポートとしてお届けします。</p>
+  </div>
+  <div class="send-box">
+    <h3>📨 回答の送信（必ず行ってください）</h3>
+    <p>下のボタンを押すと、回答内容が入力済みのGoogleフォームが開きます。</p>
+    <a id="formLink2" class="form-link" href="#" target="_blank">Googleフォームを開いて送信する →</a>
+    <ul class="steps">
+      <li><span class="step-num">1</span>上のボタンを押してGoogleフォームを開く</li>
+      <li><span class="step-num">2</span>会社名・お名前などが入力されていることを確認する</li>
+      <li><span class="step-num">3</span>フォーム下部の「送信」ボタンを押して完了</li>
+    </ul>
   </div>
 </div>
 
@@ -265,7 +293,11 @@ body{font-family:'Hiragino Sans','Hiragino Kaku Gothic ProN','Noto Sans JP',sans
 </div>
 <script>
 const FORM_BASE='https://docs.google.com/forms/d/e/1FAIpQLSdosKU0GF8DOZ4zSmjr6vlRVU5h9vtLw6Hm1wIMYHviM1SYPQ/viewform';
-const ENTRY={name:'entry.317123376',acc:'entry.139772551',dep:'entry.779242982',con:'entry.1868697523',sel:'entry.596045453',pas:'entry.1879763927'};
+const ENTRY={name:'entry.317123376',acc:'entry.139772551',dep:'entry.779242982',con:'entry.1868697523',sel:'entry.596045453',pas:'entry.1879763927',
+  // 会社名・部署名・役職
+  company:'entry.1393651654',dept:'entry.249007261',pos:'entry.894796210'};
+// true にすると、従来どおり回答直後に簡易診断を表示します
+const SHOW_RESULT=false;
 const CATS=[
   {key:'Accuracy',label:'品質へのこだわり',short:'品質',color:'#6366f1'},
   {key:'Dependency',label:'協調・連携力',short:'協調',color:'#8b5cf6'},
@@ -370,11 +402,12 @@ function onAns(qid){
   const n=Object.keys(ans).length;
   document.getElementById('pf').style.width=(n/30*100)+'%';
   document.getElementById('answeredCount').textContent=n;
-  document.getElementById('sb').disabled=n<30||!document.getElementById('nameInput').value.trim();
+  checkReady();
 }
-document.getElementById('nameInput').addEventListener('input',()=>{
-  document.getElementById('sb').disabled=Object.keys(ans).length<30||!document.getElementById('nameInput').value.trim();
-});
+function checkReady(){
+  document.getElementById('sb').disabled=Object.keys(ans).length<30||!document.getElementById('nameInput').value.trim()||!document.getElementById('companyInput').value.trim();
+}
+['nameInput','companyInput'].forEach(id=>document.getElementById(id).addEventListener('input',checkReady));
 function reshuffle(){shuffledQs=shuffle(ALL_QS);buildQ(shuffledQs);}
 function calcScores(){
   const s={};
@@ -428,7 +461,7 @@ function showResult(){
   const topScore=sorted[0].v;
   const tops=sorted.filter(c=>c.v===topScore);
   document.getElementById('formView').classList.add('hidden');
-  document.getElementById('resultView').classList.remove('hidden');
+  document.getElementById(SHOW_RESULT?'resultView':'doneView').classList.remove('hidden');
   window.scrollTo(0,0);
   document.getElementById('resName').textContent=`${name} さんの診断結果`;
   document.getElementById('resDate').textContent=`回答日：${new Date().toLocaleDateString('ja-JP')}`;
@@ -449,7 +482,11 @@ function showResult(){
   const cd=document.getElementById('catDetail');cd.innerHTML='';
   sorted.forEach(cat=>{const d=getDetail(cat.key,cat.v);const lv=getLvl(cat.v);cd.innerHTML+=`<div class="cat-item"><div class="cat-dot" style="background:${cat.color}"></div><div class="cat-body"><div class="cat-name">${cat.label}<span style="font-size:10px;background:${lv.bg};color:${lv.tc};padding:1px 5px;border-radius:3px">${lv.l}</span></div><div class="cat-desc"><strong>強み：</strong>${d.str}</div><div class="cat-desc" style="margin-top:3px"><strong>成長ポイント：</strong>${d.risk}</div></div><div class="cat-val" style="color:${cat.color}">${cat.v.toFixed(1)}</div></div>`;});
   const url=FORM_BASE+'?usp=pp_url'+'&'+ENTRY.name+'='+encodeURIComponent(name)+'&'+ENTRY.acc+'='+sc.Accuracy+'&'+ENTRY.dep+'='+sc.Dependency+'&'+ENTRY.con+'='+sc.Conservativeness+'&'+ENTRY.sel+'='+sc.SelfReliance+'&'+ENTRY.pas+'='+sc.Passive;
-  document.getElementById('formLink').href=url;
+  const extra=[['company','companyInput'],['dept','deptInput'],['pos','posInput']]
+    .filter(([k])=>!ENTRY[k].includes('XXXX'))
+    .map(([k,id])=>'&'+ENTRY[k]+'='+encodeURIComponent(document.getElementById(id).value.trim())).join('');
+  document.getElementById('formLink').href=url+extra;
+  document.getElementById('formLink2').href=url+extra;
   drawRadarSVG(sc);
 }
 
@@ -505,7 +542,8 @@ function togglePrintGuide(){
 
 function resetAll(){
   Object.keys(ans).forEach(k=>delete ans[k]);
-  document.getElementById('nameInput').value='';
+  ['nameInput','companyInput','deptInput','posInput'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('doneView').classList.add('hidden');
   document.getElementById('pf').style.width='0%';
   document.getElementById('answeredCount').textContent='0';
   document.getElementById('sb').disabled=true;
