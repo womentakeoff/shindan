@@ -208,19 +208,18 @@ body{font-family:'Hiragino Sans','Hiragino Kaku Gothic ProN','Noto Sans JP',sans
 </div>
 
 <div id="doneView" class="hidden">
-  <div class="done-card">
-    <h2>ご回答ありがとうございました</h2>
-    <p>最後に下の手順で回答を送信してください。<br>診断結果は事務局で集計のうえ、後日レポートとしてお届けします。</p>
+  <div class="done-card" id="doneSending">
+    <h2>送信しています…</h2>
+    <p>画面を閉じずに、そのままお待ちください。</p>
   </div>
-  <div class="send-box">
-    <h3>📨 回答の送信（必ず行ってください）</h3>
-    <p>下のボタンを押すと、回答内容が入力済みのGoogleフォームが開きます。</p>
+  <div class="done-card hidden" id="doneOk">
+    <h2>ご回答ありがとうございました</h2>
+    <p>回答の送信が完了しました。この画面は閉じていただいて構いません。<br>診断結果は事務局で集計のうえ、後日レポートとしてお届けします。</p>
+  </div>
+  <div class="send-box hidden" id="doneNg">
+    <h3>⚠ 自動送信できませんでした</h3>
+    <p>通信状況などにより送信できませんでした。お手数ですが、下のボタンからGoogleフォームを開き、フォーム下部の「送信」ボタンを押してください。</p>
     <a id="formLink2" class="form-link" href="#" target="_blank">Googleフォームを開いて送信する →</a>
-    <ul class="steps">
-      <li><span class="step-num">1</span>上のボタンを押してGoogleフォームを開く</li>
-      <li><span class="step-num">2</span>会社名・お名前などが入力されていることを確認する</li>
-      <li><span class="step-num">3</span>フォーム下部の「送信」ボタンを押して完了</li>
-    </ul>
   </div>
 </div>
 
@@ -487,9 +486,20 @@ function showResult(){
     .map(([k,id])=>'&'+ENTRY[k]+'='+encodeURIComponent(document.getElementById(id).value.trim())).join('');
   document.getElementById('formLink').href=url+extra;
   document.getElementById('formLink2').href=url+extra;
+  if(!SHOW_RESULT) autoSend(url+extra);
   drawRadarSVG(sc);
 }
 
+// 回答をGoogleフォームへ自動送信（受検者がフォームを開く必要なし）
+function autoSend(prefillUrl){
+  document.getElementById('sb').disabled=true;
+  const postUrl=FORM_BASE.replace(/viewform$/,'formResponse');
+  const body=new URLSearchParams(prefillUrl.split('?')[1]);
+  body.delete('usp');
+  fetch(postUrl,{method:'POST',mode:'no-cors',body:body})
+    .then(()=>{document.getElementById('doneSending').classList.add('hidden');document.getElementById('doneOk').classList.remove('hidden');})
+    .catch(()=>{document.getElementById('doneSending').classList.add('hidden');document.getElementById('doneNg').classList.remove('hidden');});
+}
 function getDeviceGuide(){
   const ua=navigator.userAgent;
   const isIOS=/iPhone|iPad|iPod/i.test(ua);
