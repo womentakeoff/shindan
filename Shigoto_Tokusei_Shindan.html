@@ -345,32 +345,33 @@ const CATS=[
   {key:'SelfReliance',label:'自律・実行力',short:'自律',color:'#10b981'},
   {key:'Passive',label:'観察・適応力',short:'観察',color:'#ef4444'}
 ];
+// r:true は逆転項目（「あてはまる」ほど点数が低くなる設問）。点数は 6−回答 で計算
 const ALL_QS=[
   {id:1,t:'仕事の正確さを最優先し、スピードより精度を重視する。',c:'Accuracy'},
   {id:2,t:'ミスを防ぐために、何度も確認する癖がある。',c:'Accuracy'},
-  {id:3,t:'他人の仕事の細部が気になることが多い。',c:'Accuracy'},
+  {id:3,t:'多少粗くても、早く仕上げて提出するほうがよいと思う。',c:'Accuracy',r:true},
   {id:4,t:'完成度が低いまま提出することに強い抵抗を感じる。',c:'Accuracy'},
   {id:5,t:'自分の仕事に「完璧」を求めすぎて時間がかかる。',c:'Accuracy'},
   {id:6,t:'他人に任せるより、自分でやったほうが安心だと思う。',c:'Accuracy'},
   {id:7,t:'判断に迷ったとき、上司や同僚の意見を聞いてから動く。',c:'Dependency'},
   {id:8,t:'自分の判断で進めるより、指示を待つほうが安心する。',c:'Dependency'},
-  {id:9,t:'仕事の優先順位を自分で決めるのが苦手だ。',c:'Dependency'},
+  {id:9,t:'仕事の優先順位は、自分で決めて進めたい。',c:'Dependency',r:true},
   {id:10,t:'決定権を持つことにプレッシャーを感じる。',c:'Dependency'},
   {id:11,t:'他者の承認がないと不安になることがある。',c:'Dependency'},
   {id:12,t:'自分の意見より、周囲の意見を優先しがちだ。',c:'Dependency'},
   {id:13,t:'新しい方法より、慣れたやり方を選ぶことが多い。',c:'Conservativeness'},
   {id:14,t:'変化より安定を重視する傾向がある。',c:'Conservativeness'},
-  {id:15,t:'新しいツールや仕組みの導入に慎重になる。',c:'Conservativeness'},
+  {id:15,t:'新しいツールや仕組みが入ると、ワクワクする。',c:'Conservativeness',r:true},
   {id:16,t:'「以前うまくいった方法」を繰り返すことが多い。',c:'Conservativeness'},
   {id:17,t:'変化が多い環境ではストレスを感じやすい。',c:'Conservativeness'},
   {id:18,t:'既存のルールを変えることに抵抗を感じる。',c:'Conservativeness'},
-  {id:19,t:'他人に頼るより、自分で解決しようとする。',c:'SelfReliance'},
+  {id:19,t:'困ったときは、早めに周りに助けを求めるほうだ。',c:'SelfReliance',r:true},
   {id:20,t:'仕事を任せるより、自分で抱えたほうが早いと思う。',c:'SelfReliance'},
   {id:21,t:'責任感が強く、他人のミスも自分で補おうとする。',c:'SelfReliance'},
   {id:22,t:'業務を共有するより、自分のやり方を守りたい。',c:'SelfReliance'},
   {id:23,t:'忙しくても「自分がやらなければ」と思ってしまう。',c:'SelfReliance'},
   {id:24,t:'他人に頼むことに罪悪感を感じることがある。',c:'SelfReliance'},
-  {id:25,t:'会議で意見を求められても、発言を控えることが多い。',c:'Passive'},
+  {id:25,t:'会議では、自分から意見を言うほうだ。',c:'Passive',r:true},
   {id:26,t:'改善提案をしたいと思っても、行動に移せないことがある。',c:'Passive'},
   {id:27,t:'周囲の反応を気にして発言を控える傾向がある。',c:'Passive'},
   {id:28,t:'新しいアイデアを出すより、指示された仕事をこなすほうが得意だ。',c:'Passive'},
@@ -460,7 +461,7 @@ function checkReady(){
 function reshuffle(){shuffledQs=shuffle(ALL_QS);buildQ(shuffledQs);}
 function calcScores(){
   const s={};
-  CATS.forEach(cat=>{const qs=ALL_QS.filter(q=>q.c===cat.key);s[cat.key]=Math.round(qs.reduce((a,q)=>a+(ans[q.id]||0),0)/qs.length*10)/10;});
+  CATS.forEach(cat=>{const qs=ALL_QS.filter(q=>q.c===cat.key);s[cat.key]=Math.round(qs.reduce((a,q)=>a+(ans[q.id]?(q.r?6-ans[q.id]:ans[q.id]):0),0)/qs.length*10)/10;});
   return s;
 }
 
