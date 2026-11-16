@@ -98,6 +98,13 @@ body{font-family:'Hiragino Sans','Hiragino Kaku Gothic ProN','Noto Sans JP',sans
 .step-num{background:#22c55e;color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px}
 .hidden{display:none}
 .name-card .lbl-gap{margin-top:12px}
+.comment-card{margin-top:1.25rem}
+.comment-card label{text-transform:none;letter-spacing:0;line-height:1.6;font-size:13px;color:#374151}
+.cm-head{font-size:15px;font-weight:700;color:#1a1a2e;margin-bottom:4px}
+.cm-lead{font-size:12px;color:#6b7280;margin-bottom:14px;line-height:1.7}
+.comment-card textarea{width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:16px;color:#1a1a2e;background:#fafafa;font-family:inherit;line-height:1.6;resize:vertical;-webkit-appearance:none}
+.comment-card textarea:focus{outline:none;border-color:#6366f1;background:#fff}
+.missing-msg{font-size:12px;color:#991b1b;text-align:center;margin:10px 0 0;line-height:1.7;min-height:1em}
 .req{font-size:10px;background:#fee2e2;color:#991b1b;padding:1px 6px;border-radius:3px;margin-left:4px;font-weight:600}
 .done-card{background:#fff;border-radius:12px;padding:1.5rem 1.25rem;margin-bottom:1.25rem;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06)}
 .done-card h2{font-size:clamp(17px,4.5vw,21px);font-weight:700;color:#1a1a2e;margin-bottom:8px}
@@ -201,6 +208,17 @@ body{font-family:'Hiragino Sans','Hiragino Kaku Gothic ProN','Noto Sans JP',sans
     <div class="prog-bar"><div class="prog-fill" id="pf" style="width:0%"></div></div>
   </div>
   <div id="qa"></div>
+  <div class="name-card comment-card">
+    <div class="cm-head">最後に、あなたご自身のことを教えてください</div>
+    <p class="cm-lead">ご記入いただいた内容をもとに、より具体的なレポートをお届けします。</p>
+    <label>今の仕事で「得意」「やりがいがある」と感じるのはどんな場面ですか？ <span class="req">必須</span></label>
+    <textarea id="cm1" rows="4" maxlength="1000" placeholder="例：ミスなく書類を仕上げられたとき、周りから頼られたとき など"></textarea>
+    <label class="lbl-gap">今の仕事で困っていること、苦手に感じていることはありますか？ <span class="req">必須</span></label>
+    <textarea id="cm2" rows="4" maxlength="1000" placeholder="例：急な依頼が重なると焦ってしまう、意見を言うのが苦手 など（特にない場合は「特になし」とご記入ください）"></textarea>
+    <label class="lbl-gap">これから挑戦したいこと、目指したい働き方を教えてください。 <span class="req">必須</span></label>
+    <textarea id="cm3" rows="4" maxlength="1000" placeholder="例：後輩の指導をしたい、業務改善を提案できるようになりたい など"></textarea>
+  </div>
+  <p id="missingMsg" class="missing-msg"></p>
   <div class="btn-wrap">
     <button class="btn-outline" onclick="reshuffle()">↺ 設問を並び替え</button>
     <button class="btn-primary" id="sb" disabled onclick="showResult()">回答を完了する →</button>
@@ -294,7 +312,8 @@ body{font-family:'Hiragino Sans','Hiragino Kaku Gothic ProN','Noto Sans JP',sans
 const FORM_BASE='https://docs.google.com/forms/d/e/1FAIpQLSdosKU0GF8DOZ4zSmjr6vlRVU5h9vtLw6Hm1wIMYHviM1SYPQ/viewform';
 const ENTRY={name:'entry.317123376',acc:'entry.139772551',dep:'entry.779242982',con:'entry.1868697523',sel:'entry.596045453',pas:'entry.1879763927',
   // 会社名・部署名・役職
-  company:'entry.1393651654',dept:'entry.249007261',pos:'entry.894796210'};
+  company:'entry.1393651654',dept:'entry.249007261',pos:'entry.894796210',
+  cm1:'entry.1740847160',cm2:'entry.1980743442',cm3:'entry.1151534019'};
 // true にすると、従来どおり回答直後に簡易診断を表示します
 const SHOW_RESULT=false;
 const CATS=[
@@ -404,9 +423,18 @@ function onAns(qid){
   checkReady();
 }
 function checkReady(){
-  document.getElementById('sb').disabled=Object.keys(ans).length<30||!document.getElementById('nameInput').value.trim()||!document.getElementById('companyInput').value.trim();
+  const v=id=>document.getElementById(id).value.trim();
+  const miss=[];
+  if(!v('companyInput'))miss.push('会社名');
+  if(!v('nameInput'))miss.push('お名前');
+  const left=30-Object.keys(ans).length;
+  if(left>0)miss.push(`設問（残り${left}問）`);
+  const cm=['cm1','cm2','cm3'].filter(id=>!v(id)).length;
+  if(cm>0)miss.push(`最後の記述欄（${cm}か所）`);
+  document.getElementById('sb').disabled=miss.length>0;
+  document.getElementById('missingMsg').textContent=miss.length?'未記入の項目があります：'+miss.join('、'):'';
 }
-['nameInput','companyInput'].forEach(id=>document.getElementById(id).addEventListener('input',checkReady));
+['nameInput','companyInput','cm1','cm2','cm3'].forEach(id=>document.getElementById(id).addEventListener('input',checkReady));
 function reshuffle(){shuffledQs=shuffle(ALL_QS);buildQ(shuffledQs);}
 function calcScores(){
   const s={};
@@ -481,7 +509,7 @@ function showResult(){
   const cd=document.getElementById('catDetail');cd.innerHTML='';
   sorted.forEach(cat=>{const d=getDetail(cat.key,cat.v);const lv=getLvl(cat.v);cd.innerHTML+=`<div class="cat-item"><div class="cat-dot" style="background:${cat.color}"></div><div class="cat-body"><div class="cat-name">${cat.label}<span style="font-size:10px;background:${lv.bg};color:${lv.tc};padding:1px 5px;border-radius:3px">${lv.l}</span></div><div class="cat-desc"><strong>強み：</strong>${d.str}</div><div class="cat-desc" style="margin-top:3px"><strong>成長ポイント：</strong>${d.risk}</div></div><div class="cat-val" style="color:${cat.color}">${cat.v.toFixed(1)}</div></div>`;});
   const url=FORM_BASE+'?usp=pp_url'+'&'+ENTRY.name+'='+encodeURIComponent(name)+'&'+ENTRY.acc+'='+sc.Accuracy+'&'+ENTRY.dep+'='+sc.Dependency+'&'+ENTRY.con+'='+sc.Conservativeness+'&'+ENTRY.sel+'='+sc.SelfReliance+'&'+ENTRY.pas+'='+sc.Passive;
-  const extra=[['company','companyInput'],['dept','deptInput'],['pos','posInput']]
+  const extra=[['company','companyInput'],['dept','deptInput'],['pos','posInput'],['cm1','cm1'],['cm2','cm2'],['cm3','cm3']]
     .filter(([k])=>!ENTRY[k].includes('XXXX'))
     .map(([k,id])=>'&'+ENTRY[k]+'='+encodeURIComponent(document.getElementById(id).value.trim())).join('');
   document.getElementById('formLink').href=url+extra;
@@ -552,7 +580,7 @@ function togglePrintGuide(){
 
 function resetAll(){
   Object.keys(ans).forEach(k=>delete ans[k]);
-  ['nameInput','companyInput','deptInput','posInput'].forEach(id=>document.getElementById(id).value='');
+  ['nameInput','companyInput','deptInput','posInput','cm1','cm2','cm3'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('doneView').classList.add('hidden');
   document.getElementById('pf').style.width='0%';
   document.getElementById('answeredCount').textContent='0';
@@ -563,7 +591,7 @@ function resetAll(){
   window.scrollTo(0,0);
   shuffledQs=shuffle(ALL_QS);buildQ(shuffledQs);
 }
-shuffledQs=shuffle(ALL_QS);buildQ(shuffledQs);
+shuffledQs=shuffle(ALL_QS);buildQ(shuffledQs);checkReady();
 </script>
 </body>
 </html>
